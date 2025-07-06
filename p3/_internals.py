@@ -48,7 +48,10 @@ class ExpectedDataFrame:
 class SparkTransformation(Protocol):
     """Protocol for Spark transformations receiving a DataFrame and returning one."""
 
-    def __call__(self, df: DataFrame, *args, **kwargs) -> DataFrame:
+    def __name__(self) -> str:  # type: ignore
+        pass
+
+    def __call__(self, df: DataFrame, *args, **kwargs) -> DataFrame:  # type: ignore
         pass
 
 

@@ -1,10 +1,9 @@
 import logging
-from contextlib import contextmanager
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
 from pyspark.testing import assertDataFrameEqual, assertSchemaEqual
-from typing import Callable
+from typing import Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
 
@@ -45,20 +44,12 @@ class ExpectedDataFrame:
         )
 
 
-@contextmanager
-def can_execute():
-    try:
-        yield
-    except Exception as e:
-        raise pytest.fail(f"Wasn't able to execute function due to error: {e}")
+@runtime_checkable
+class SparkTransformation(Protocol):
+    """Protocol for Spark transformations receiving a DataFrame and returning one."""
 
-
-@contextmanager
-def not_raises(exception):
-    try:
-        yield
-    except exception:
-        raise pytest.fail(f'Did raise unwanted {exception}')
+    def __call__(self, df: DataFrame, *args, **kwargs) -> DataFrame:
+        pass
 
 
 class Transformation:
@@ -71,7 +62,7 @@ class Transformation:
     Usage as context manager should guarantee free memory after usage.
     """
 
-    def __init__(self, func: Callable) -> None:
+    def __init__(self, func: SparkTransformation) -> None:
         self.func = func
 
     def __enter__(self):

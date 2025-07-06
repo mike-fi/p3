@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 import _pytest  # noqa
 import pytest
 from pyspark.sql import SparkSession
@@ -21,6 +22,22 @@ def spark():
     spark.stop()
 
 
+@contextmanager
+def can_execute():
+    try:
+        yield
+    except Exception as e:
+        raise pytest.fail(f"Wasn't able to execute function due to error: {e}")
+
+
+@contextmanager
+def not_raises(exception):
+    try:
+        yield
+    except exception:
+        raise pytest.fail(f'Did raise unwanted {exception}')
+
+
 class SparkException(Exception): ...
 
 
@@ -38,6 +55,8 @@ class SparkItem(pytest.Item):
 
 # Introduce custom option for spark plugin
 def pytest_addoption(parser):
+    # spark remote url
+    logger.info('The spark_remote_url and spark_conf options are without effect by now.')
     parser.addini('spark_remote_url', help='Remote URL for spark-connect')
     parser.addoption(
         '--spark-remote-url',

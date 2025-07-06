@@ -1,5 +1,3 @@
-import pytest
-
 COLLECTION_FILE = """
         import pytest
         from pyspark.conf import SparkConf
@@ -11,23 +9,11 @@ COLLECTION_FILE = """
 
         def test_marker_addition(spark):
             assert True
-
-        def test_hello_name(name):
-            assert hello(name) == "Hello {0}!".format(name)
     """
 
 CONFTEST_FILE = """
         import pytest
         pytest_plugins = "p3"
-
-
-        @pytest.fixture(params=[
-            "Brianna",
-            "Andreas",
-            "Floris",
-        ])
-        def name(request):
-            return request.param
     """
 
 
@@ -49,7 +35,6 @@ def test_oppressing_plugin(pytester):
     # create a temporary conftest.py file
     pytester.makeconftest(CONFTEST_FILE)
     res = pytester.runpytest('-p no:p3')
-    print(type(res.outlines))
     assert not any('spark [session scope]' in line for line in res.outlines)
 
 
@@ -66,10 +51,10 @@ def test_spark_marker(pytester):
 
     # check that all 4 tests passed
     # We deselect the test that uses spark fixture tho, tbd.
-    result.assert_outcomes(passed=1, deselected=4)
+    result.assert_outcomes(passed=1, deselected=1)
 
 
-@pytest.mark.xfail(reason='still select tests using SparkSession fixture.')
+# @pytest.mark.xfail(reason='still select tests using SparkSession fixture.')
 def test_no_spark_marker(pytester):
     """Make sure that plugin works."""
     pytester.makeconftest(CONFTEST_FILE)
@@ -77,8 +62,8 @@ def test_no_spark_marker(pytester):
 
     # run all tests without spark marker
     # Doesnt work at the moment due to string representation
-    result = pytester.runpytest(r'-m "not spark"')
+    result = pytester.runpytest('-m not spark')
 
     # check that all 4 tests passed
     # Still problem with
-    result.assert_outcomes(passed=4, deselected=1)
+    result.assert_outcomes(passed=1, deselected=1)

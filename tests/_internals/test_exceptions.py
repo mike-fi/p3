@@ -1,6 +1,3 @@
-from p3.dataframe import UnsupportedArgsLength
-
-
 def pytest_generate_tests(metafunc):
     test_ids = []
     argvalues = []
@@ -12,7 +9,6 @@ def pytest_generate_tests(metafunc):
 
 class TestException:
     exception_tests = [
-        (UnsupportedArgsLength, 'test_message')
         # append new exceptions and messages here
         # (ExceptionClass, "message")
     ]

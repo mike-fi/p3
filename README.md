@@ -77,10 +77,11 @@ pytest -m spark
 
 or respectively, if all but spark marked tests should run
 ```sh
-pytest -m "no spark"
+pytest -m not spark
 ```
 
 ## Contributing
+> **__NOTE__**: Since this is mainly WIP for now, prepare yourself to face some issues. I'll try to keep everything updated.
 
 ### Developer Setup
 The following tools are currently used:
@@ -88,16 +89,16 @@ The following tools are currently used:
 I am using python 3.12.9 but project should support everything up from 3.11.
 
 **Java**
-I am using java version 21 via openjdk.
+I am using java version 21 via openjdk. But with Spark-Connect used, this can be abandoned.
 
 **Project Management: uv**
-I recommend latest version which currently is 0.6
+I recommend latest version which currently is 0.7.x
 ```sh
-curl -LsSf https://astral.sh/uv/0.6.0/install.sh | sh
+curl -LsSf https://astral.sh/uv/0.7.x/install.sh | sh
 ```
 
 **Dev Tools**
-Dev Tools correlate to pre-commit hooks and besides pre-commit are optional. I recommend installin `ruff` and `pyright` next to pre-commit
+Dev Tools correlate to pre-commit hooks and besides pre-commit are optional. I recommend installing `ruff` and `pyrefly` next to pre-commit
 
 ```sh
 uv tool install pre-commit

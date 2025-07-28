@@ -63,14 +63,6 @@ def pytest_addoption(parser):
         dest='spark_remote_url',
         help='Remote URL for spark-connect',
     )
-    group = parser.getgroup('helloworld')
-    group.addoption(
-        '--name',
-        action='store',
-        dest='name',
-        default='World',
-        help='Default "name" for hello().',
-    )
     parser.addini('spark_conf', help='Options to be used in SparkSession', type='linelist')
 
 

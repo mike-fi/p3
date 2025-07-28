@@ -27,7 +27,6 @@ p3 = "plugin"
 
 [tool.uv]
 dev-dependencies = [
-    "pytest-cov<5.0.0,>=4.0.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -38,8 +37,9 @@ sources = ["p3"]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+
 [tool.pytest.ini_options]
-addopts = "--cov p3 --cov-report term-missing --cov-report html --cov-report xml --no-cov-on-fail --verbose"
+addopts = "--verbose"
 testpaths = [
     "tests",
 ]

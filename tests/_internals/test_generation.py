@@ -8,7 +8,7 @@ from pyspark.sql.types import (
     StructField,
     StructType,
 )
-from p3.generator import Generator
+from p3._internals import Generator
 
 
 @pytest.fixture

@@ -51,21 +51,10 @@ All of the above functions will pass the test although only the first one has th
 
 This pytest plugin aims to create a useful baseline for spark unit testing. Therefore several help functions and classes are introduced in order to make writing tests easy and joyful.
 
-## Feature Description
-
-### Runs On Schema or Can Build Execution Plan
-As a more base test, one may test if the function (Transformation) can be applied on a DataFrame with a specific schema. Therefore the least test one should write would be the test whether or not the function runs on a dataframe with a specific schema
-
-```python
-
-# TBD Write Example Code
-```
+## :tada: Feature Description :sparkles:
 
 ### SparkSession Fixture
 A Spark Session, optimized for standalone or 0-Worker Cluster is provided with minimal shuffling and other configurations.
-
-## Usage
-Simply add pytest-spark-testing to your testing dependencies and it is available out of the box and will be recognized by pytest as installed plugin. It's as easy as it can be.
 
 ### Markers
 The plugin adds a new marker to pytest, `@pytest.mark.spark` which marks the test to require a running spark session.
@@ -77,10 +66,57 @@ pytest -m spark
 
 or respectively, if all but spark marked tests should run
 ```sh
-pytest -m "no spark"
+pytest -m not spark
 ```
 
+
+## :alembic: Vision :construction:
+
+The following features are currently under preparation (so will definitely be part of the plugin in the near future but not yet finished)
+
+### :globe_with_meridians: Exchangeable SPARK_REMOTE URL/ Spark-Connect support
+I want to be able to exchange the spark server in the cli. MAybe first I want to run a job offline against a locally running spark connect server and in the next test I want to use a Databricks Cluster because I'm running Integration tests or need to have production-like data.
+
+```sh
+pytest -m spark --spark-remote "sc://localhost:15001"
+```
+
+### :wrench: SparkSession Config in config file `pytest.ini` or `pyproject.toml` or Command-Line
+Similar to previous feature I want configure some stuff early on either in the command line or in a config file.
+
+```sh
+pytest -m spark --spark-conf "spark.sql.shuffle.partitions=100"
+```
+
+
+### Runs On Schema or Can Build Execution Plan
+As a more base test, one may test if the function (Transformation) can be applied on a DataFrame with a specific schema. Therefore the least test one should write would be the test whether or not the function runs on a dataframe with a specific schema
+
+```python
+def test_transformation(spark, schema: StructType) -> None
+
+```
+
+### Under further evaluation
+
+I'm still figuring out if these are necessary and a good practice but somehow they're appealing.
+
+1. **Test-based/parametrized SparkSession Config override**
+
+I would love to test different transformations on different configurations. Maybe for a transformation some configuration is necessary, so I would love to (re-)configure the `SparkSession` before the test run and set it back afterwards. 
+
+```python
+@pytest.mark.spark
+@configure_spark(**options)
+def test_transformation(spark, input_df) -> None:
+    do_something()
+```
+
+2. **Auto-Ingest spark session fixture into marked tests**
+
+
 ## Contributing
+> **__NOTE__**: Since this is mainly WIP for now, prepare yourself to face some issues. I'll try to keep everything updated.
 
 ### Developer Setup
 The following tools are currently used:
@@ -88,16 +124,16 @@ The following tools are currently used:
 I am using python 3.12.9 but project should support everything up from 3.11.
 
 **Java**
-I am using java version 21 via openjdk.
+I am using java version 21 via openjdk. But with Spark-Connect used, this can be abandoned.
 
 **Project Management: uv**
-I recommend latest version which currently is 0.6
+I recommend latest version which currently is 0.7.x
 ```sh
-curl -LsSf https://astral.sh/uv/0.6.0/install.sh | sh
+curl -LsSf https://astral.sh/uv/0.7.x/install.sh | sh
 ```
 
 **Dev Tools**
-Dev Tools correlate to pre-commit hooks and besides pre-commit are optional. I recommend installin `ruff` and `pyright` next to pre-commit
+Dev Tools correlate to pre-commit hooks and besides pre-commit are optional. I recommend installing `ruff` and `pyrefly` next to pre-commit
 
 ```sh
 uv tool install pre-commit

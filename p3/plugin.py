@@ -2,7 +2,7 @@ import logging
 from contextlib import contextmanager
 import _pytest  # noqa
 import pytest
-from pyspark.sql import SparkSession
+from p3._internals import SessionGenerator
 
 logger = logging.getLogger('p3')
 
@@ -10,8 +10,9 @@ logger = logging.getLogger('p3')
 @pytest.fixture(scope='session')
 def spark(request):
     """Yield SparkSession for testing session scope."""
-    logger.info('Creating SparkSession...')
-    spark = SparkSession.builder.master('local[*]').appName('spark_testing').getOrCreate()  # type: ignore
+    engine = request.config.getoption('--engine')
+    logger.info('Creating SparkSession with engine')
+    spark = SessionGenerator(engine).generate_session(request)
 
     logger.info('Set logLevel of py4j logger to ERROR')
     logging.getLogger('py4j').setLevel(logging.ERROR)
@@ -73,7 +74,6 @@ def pytest_addoption(parser: pytest.Parser):
 
     # ini options
     parser.addini('spark_conf', help='Options to be used in SparkSession', type='linelist')
-    parser.addini('spark_remote_url', help='Remote URL for spark-connect')
 
 
 def pytest_configure(config):

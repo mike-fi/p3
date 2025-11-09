@@ -6,7 +6,6 @@ requires-python = ">=3.11"
 dependencies = [
     "pyspark[connect]>=3.5.1",
     "pytest>=8.0.0",
-    "setuptools>=75.8.0",
     "sqlframe[duckdb]>=3.43.8",
 ]
 name = "pytest-pyspark-plugin"
@@ -27,10 +26,6 @@ classifiers = [
 
 [project.entry-points.pytest11]
 p3 = "plugin"
-
-[tool.uv]
-dev-dependencies = [
-]
 
 [tool.hatch.build.targets.wheel]
 only-include = ["p3"]

@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
@@ -101,11 +102,35 @@ class Generator:
         raise NotImplementedError('Synthetic Data Generation is currently not supported')
 
 
+class SessionEngine(Enum):
+    DUCKDB = 1
+    REMOTE = 2
+    LOCAL = 3
+
+
 class SessionGenerator:
     def __init__(self, engine: str):
-        if engine == 'duckdb':
-            logger.info('Creating duckdb session.')
-        elif engine == 'remote':
-            logger.info('Creating remote spark session.')
-        else:
-            logger.info('Creating regular spark session.')
+        if not hasattr(SessionEngine, engine.upper()):
+            raise ValueError('engine input not allowed.')
+        self._engine = getattr(SessionEngine, engine.upper()).value
+
+    def generate_session(self, request: pytest.FixtureRequest) -> SparkSession:
+        match self._engine:
+            case 1:
+                logger.warning('This is not a SQLFrame DuckDBSession')
+                from sqlframe import activate
+
+                activate('duckdb')
+                spark_builder = SparkSession.builder.appName('duckdb_testing')
+            case 2:
+                remote_url = request.config.getoption('spark_remote_url')
+                logger.debug('Returning remote SparkSession')
+                spark_builder = SparkSession.builder.remote(remote_url).appName('remote_testing')
+            case 3:
+                logger.info('Returning standalone SparkSession')
+                spark_builder = SparkSession.builder.master('local[*]').appName('local_testing')
+            case _:
+                logger.info('Returning standalone SparkSession per default')
+                spark_builder = SparkSession.builder.master('local[*]').appName('default_testing')
+
+        return spark_builder.getOrCreate()

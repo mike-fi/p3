@@ -53,8 +53,19 @@ This pytest plugin aims to create a useful baseline for spark unit testing. Ther
 
 ## :tada: Feature Description :sparkles:
 
-### SparkSession Fixture
-A Spark Session, optimized for standalone or 0-Worker Cluster is provided with minimal shuffling and other configurations.
+### SparkSession Fixture with underlying engine
+One way of doing things simply isn't enough. Especially when testing targeted for data wrangling code. Sometimes you just want to assure that the logic is correct, then the test needs to be blazing fast even on small datasets. This is where Spark **doesn't** shine ... but **DuckDB** does. Then sometimes you want to test your code against real world data. This is difficult if your data is located in the cloud. With spark-connect, this is way easier, e.g. running your tests as a client sending the job to a Databricks cluster. Therefore the overall goal is to easily switch between those scenarios.
+
+Currently supported:
+- Standalone local SparkSession as a default option
+- SparkConnect session defined via `--spark-remote-url`
+- SQLFrame DuckDBSession triggered via `--engine=duckdb` cli argument
+
+**Order of precedence**
+1. The `--engine` argument differentiates between `spark` (*default*) and `duckdb` and therefore is of the highest order. All other arguments will be ignored.
+2. The `--spark-remote-url` argument 
+3. Fallback is a default, standalone spark session.
+> __NOTE__: Depending on your session, further dependencies may need to be installed (e.g. java)
 
 ### Markers
 The plugin adds a new marker to pytest, `@pytest.mark.spark` which marks the test to require a running spark session.

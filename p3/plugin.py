@@ -68,7 +68,7 @@ def pytest_addoption(parser: pytest.Parser):
         '--engine',
         action='store',
         dest='spark_testing_engine',
-        default='spark',
+        default='local',
         help='Engine for spark tests',
     )
 

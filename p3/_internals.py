@@ -99,3 +99,13 @@ class Generator:
     @staticmethod
     def create_dataframe(schema: StructType) -> DataFrame:
         raise NotImplementedError('Synthetic Data Generation is currently not supported')
+
+
+class SessionGenerator:
+    def __init__(self, engine: str):
+        if engine == 'duckdb':
+            logger.info('Creating duckdb session.')
+        elif engine == 'remote':
+            logger.info('Creating remote spark session.')
+        else:
+            logger.info('Creating regular spark session.')

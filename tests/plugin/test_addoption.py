@@ -71,3 +71,16 @@ def test_no_spark_marker(pytester: Pytester):
     # check that all 4 tests passed
     # Still problem with
     result.assert_outcomes(deselected=1)
+
+
+def test_help_message(pytester):
+    result = pytester.runpytest(
+        '--help',
+    )
+    # fnmatch_lines does an assertion internally
+    result.stdout.fnmatch_lines(
+        [
+            '*--spark-remote-url=SPARK_REMOTE_URL',
+            '*--engine=SPARK_TESTING_ENGINE',
+        ]
+    )

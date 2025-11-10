@@ -6,10 +6,10 @@ requires-python = ">=3.11"
 dependencies = [
     "pyspark[connect]>=3.5.1",
     "pytest>=8.0.0",
-    "setuptools>=75.8.0",
+    "sqlframe[duckdb]>=3.43.8",
 ]
-name = "pytest-pyspark-plugin"
-version = "0.2.0"
+name = "p3"
+version = "0.3.0"
 description = "Pytest pyspark plugin (p3)"
 readme = "README.md"
 classifiers = [
@@ -20,18 +20,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
 ]
 
 [project.entry-points.pytest11]
-p3 = "plugin"
-
-[tool.uv]
-dev-dependencies = [
-]
-
-[tool.hatch.build.targets.wheel]
-only-include = ["p3"]
-sources = ["p3"]
+p3 = "p3.plugin"
 
 [build-system]
 requires = ["hatchling"]

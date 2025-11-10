@@ -2,16 +2,17 @@ import logging
 from contextlib import contextmanager
 import _pytest  # noqa
 import pytest
-from pyspark.sql import SparkSession
+from p3._internals import SessionGenerator
 
 logger = logging.getLogger('p3')
 
 
 @pytest.fixture(scope='session')
-def spark():
+def spark(request):
     """Yield SparkSession for testing session scope."""
-    logger.info('Creating SparkSession...')
-    spark = SparkSession.builder.master('local[*]').appName('spark_testing').getOrCreate()  # type: ignore
+    engine = request.config.getoption('--engine')
+    logger.info('Creating SparkSession with engine')
+    spark = SessionGenerator(engine).generate_session(request)
 
     logger.info('Set logLevel of py4j logger to ERROR')
     logging.getLogger('py4j').setLevel(logging.ERROR)
@@ -54,15 +55,24 @@ class SparkItem(pytest.Item):
 
 
 # Introduce custom option for spark plugin
-def pytest_addoption(parser):
-    # spark remote url
-    logger.info('The spark_remote_url and spark_conf options are without effect by now.')
-    parser.addini('spark_remote_url', help='Remote URL for spark-connect')
-    parser.addoption(
+def pytest_addoption(parser: pytest.Parser):
+    # spark configuration group
+    logger.warning('The spark_remote_url and spark_conf options are without effect by now.')
+    spark_test_opts = parser.getgroup('spark', description='spark testing config')
+    spark_test_opts.addoption(
         '--spark-remote-url',
         dest='spark_remote_url',
         help='Remote URL for spark-connect',
     )
+    spark_test_opts.addoption(
+        '--engine',
+        action='store',
+        dest='spark_testing_engine',
+        default='local',
+        help='Engine for spark tests',
+    )
+
+    # ini options
     parser.addini('spark_conf', help='Options to be used in SparkSession', type='linelist')
 
 

@@ -25,7 +25,7 @@ def test_active_plugin(pytester: Pytester):
     pytester.makepyfile(COLLECTION_FILE)
     res = pytester.runpytest()
     plugins_line = [s for s in res.outlines if s.startswith('plugins:')][0]
-    assert 'pyspark-plugin' in plugins_line
+    assert 'p3' in plugins_line
 
 
 def test_available_fixtures(pytester: Pytester):
@@ -71,3 +71,16 @@ def test_no_spark_marker(pytester: Pytester):
     # check that all 4 tests passed
     # Still problem with
     result.assert_outcomes(deselected=1)
+
+
+def test_help_message(pytester):
+    result = pytester.runpytest(
+        '--help',
+    )
+    # fnmatch_lines does an assertion internally
+    result.stdout.fnmatch_lines(
+        [
+            '*--spark-remote-url=SPARK_REMOTE_URL',
+            '*--engine=SPARK_TESTING_ENGINE',
+        ]
+    )

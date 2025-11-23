@@ -25,7 +25,7 @@ def test_active_plugin(pytester: Pytester):
     pytester.makepyfile(COLLECTION_FILE)
     res = pytester.runpytest()
     plugins_line = [s for s in res.outlines if s.startswith('plugins:')][0]
-    assert 'p3' in plugins_line
+    assert 'pyspark-plugin' in plugins_line
 
 
 def test_available_fixtures(pytester: Pytester):

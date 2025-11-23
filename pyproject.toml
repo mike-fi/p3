@@ -28,8 +28,7 @@ classifiers = [
 p3 = "p3.plugin"
 
 [tool.hatch.build.targets.wheel]
-only-include = ["p3"]
-sources = ["p3"]
+packages = ["p3"]
 
 [build-system]
 requires = ["hatchling"]

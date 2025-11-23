@@ -8,7 +8,7 @@ dependencies = [
     "pytest>=8.0.0",
     "sqlframe[duckdb]>=3.43.8",
 ]
-name = "p3"
+name = "pytest-pyspark-plugin"
 version = "0.3.0"
 description = "Pytest pyspark plugin (p3)"
 readme = "README.md"
@@ -27,10 +27,12 @@ classifiers = [
 [project.entry-points.pytest11]
 p3 = "p3.plugin"
 
+[tool.hatch.build.targets.wheel]
+packages = ["p3"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
 
 [tool.pytest.ini_options]
 addopts = "--verbose"

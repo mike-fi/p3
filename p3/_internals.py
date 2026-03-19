@@ -1,10 +1,14 @@
 import logging
+from collections.abc import Callable
 from enum import Enum
+from importlib import import_module
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StructType
 from pyspark.testing import assertDataFrameEqual, assertSchemaEqual
 from typing import Protocol, runtime_checkable
+
+TransformationFunc = Callable[[DataFrame], DataFrame]
 
 logger = logging.getLogger(__name__)
 
@@ -31,18 +35,22 @@ class ExpectedDataFrame:
         return cls(df)
 
     def __enter__(self):
-        yield self
+        return self
 
-    def __exit__(self):
-        """Remove References from cache."""
-        self.df.unpersist()
+    def __exit__(self, exc_type, exc, tb):
+        """Remove references from cache."""
+        try:
+            self.df.unpersist()
+        except Exception:
+            logger.debug('Failed to unpersist ExpectedDataFrame', exc_info=True)
+        return False
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DataFrame):
             return NotImplemented
-        return all(
-            [assertDataFrameEqual(self.df, other), assertSchemaEqual(self.df.schema, other.schema)]
-        )
+        assertDataFrameEqual(self.df, other)
+        assertSchemaEqual(self.df.schema, other.schema)
+        return True
 
 
 @runtime_checkable
@@ -66,31 +74,36 @@ class Transformation:
     Usage as context manager should guarantee free memory after usage.
     """
 
-    def __init__(self, func: SparkTransformation) -> None:
+    def __init__(self, func: TransformationFunc) -> None:
         self.func = func
 
     def __enter__(self):
-        logger.info(f'Will test execution of transformation {self.func.__name__}.')
+        logger.info(f'Will test execution of transformation {self._func_name}.')
         yield self
 
-    def runs_on_schema(self, schema: StructType):
-        empty_df = Generator.create_empty_dataframe(schema)
+    @property
+    def _func_name(self) -> str:
+        return getattr(self.func, '__name__', type(self.func).__name__)
+
+    def runs_on_schema(self, schema: StructType, spark: SparkSession | None = None) -> bool:
+        empty_df = Generator.create_empty_dataframe(schema, spark=spark)
         try:
             self.func(empty_df)
             return True
         except Exception as e:
-            logger.error(f'Failed execution of function {self.func.__name__}: {e}')
+            logger.error(f'Failed execution of function {self._func_name}: {e}')
             logger.debug(f'Tried execution on schema: {empty_df.printSchema()}')
             pytest.fail(str(e))
 
     def __exit__(self):
-        logger.info(f'CleanUp test setup of transformation {self.func.__name__}.')
+        logger.info(f'CleanUp test setup of transformation {self._func_name}.')
 
 
 class Generator:
     @staticmethod
-    def create_empty_dataframe(schema: StructType) -> DataFrame:
-        spark = SparkSession.builder.getOrCreate()  # type: ignore
+    def create_empty_dataframe(schema: StructType, spark: SparkSession | None = None) -> DataFrame:
+        if spark is None:
+            spark = SparkSession.builder.getOrCreate()  # type: ignore
         logger.debug(f'Creating empty df with schema {schema}')
         empty_df = spark.createDataFrame([], schema)
 
@@ -118,9 +131,7 @@ class SessionGenerator:
         match self._engine:
             case 1:
                 logger.warning('This is not a SQLFrame DuckDBSession')
-                from sqlframe import activate
-
-                activate('duckdb')
+                _activate_sqlframe_duckdb()
                 spark_builder = SparkSession.builder.appName('duckdb_testing')
             case 2:
                 remote_url = request.config.getoption('spark_remote_url')
@@ -134,3 +145,9 @@ class SessionGenerator:
                 spark_builder = SparkSession.builder.master('local[*]').appName('default_testing')
 
         return spark_builder.getOrCreate()
+
+
+def _activate_sqlframe_duckdb() -> None:
+    activate = import_module('sqlframe').activate
+    typed_activate: 'Callable[[str], None]' = activate
+    typed_activate('duckdb')

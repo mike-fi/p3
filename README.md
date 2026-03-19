@@ -51,6 +51,43 @@ All of the above functions will pass the test although only the first one has th
 
 This pytest plugin aims to create a useful baseline for spark unit testing. Therefore several help functions and classes are introduced in order to make writing tests easy and joyful.
 
+## Install & Quickstart
+### Install
+Use `uv` and optional extras depending on the engine you want to use:
+```sh
+uv sync
+```
+Optional extras:
+- DuckDB engine: `uv sync --extra duckdb`
+- Spark Connect engine: `uv sync --extra connect`
+
+### Quickstart
+Minimal example with the `spark` fixture:
+```python
+import pytest
+from pyspark.sql import functions as F
+
+@pytest.mark.spark
+def test_counts(spark):
+    df = spark.createDataFrame(
+        [{"Country": "Germany", "City": "Munich"}, {"Country": "Germany", "City": "Nuremberg"}]
+    )
+    out = df.groupBy("Country").agg(F.countDistinct("City").alias("Cities"))
+    assert out.count() == 1
+```
+Run:
+```sh
+uv run pytest -m spark
+```
+
+## Configuration
+CLI options:
+- `--engine`: `local` (default), `remote`, or `duckdb`
+- `--spark-remote-url`: only used when `--engine remote` is selected
+
+INI option (reserved for future use):
+- `spark_conf` in `pytest.ini` or `pyproject.toml` (currently not applied)
+
 ## :tada: Feature Description :sparkles:
 
 ### SparkSession Fixture with underlying engine
@@ -86,10 +123,10 @@ pytest -m not spark
 The following features are currently under preparation (so will definitely be part of the plugin in the near future but not yet finished)
 
 ### :globe_with_meridians: Exchangeable SPARK_REMOTE URL/ Spark-Connect support
-I want to be able to exchange the spark server in the cli. MAybe first I want to run a job offline against a locally running spark connect server and in the next test I want to use a Databricks Cluster because I'm running Integration tests or need to have production-like data.
+I want to be able to exchange the spark server in the cli. Maybe first I want to run a job offline against a locally running spark connect server and in the next test I want to use a Databricks Cluster because I'm running Integration tests or need to have production-like data.
 
 ```sh
-pytest -m spark --spark-remote "sc://localhost:15001"
+pytest -m spark --engine remote --spark-remote-url "sc://localhost:15001"
 ```
 
 ### :wrench: SparkSession Config in config file `pytest.ini` or `pyproject.toml` or Command-Line
@@ -144,7 +181,7 @@ curl -LsSf https://astral.sh/uv/0.7.x/install.sh | sh
 ```
 
 **Dev Tools**
-Dev Tools correlate to pre-commit hooks and besides pre-commit are optional. I recommend installing `ruff` and `pyrefly` next to pre-commit
+Dev Tools correlate to pre-commit hooks and besides pre-commit are optional. I recommend installing `ruff` and `ty` next to pre-commit
 
 ```sh
 uv tool install pre-commit

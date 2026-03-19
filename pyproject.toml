@@ -4,9 +4,8 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "pyspark[connect]>=3.5.1",
+    "pyspark>=3.5.1",
     "pytest>=8.0.0",
-    "sqlframe[duckdb]>=3.43.8",
 ]
 name = "pytest-pyspark-plugin"
 version = "0.3.0"
@@ -22,6 +21,14 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "License :: OSI Approved :: MIT License",
+]
+
+[project.optional-dependencies]
+connect = [
+    "pyspark[connect]>=3.5.1",
+]
+duckdb = [
+    "sqlframe[duckdb]>=3.43.8",
 ]
 
 [project.entry-points.pytest11]
